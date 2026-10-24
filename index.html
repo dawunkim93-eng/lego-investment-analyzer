@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="description" content="단종 LEGO 세트의 현재 신품 시세와 출시가 대비 수익률을 분석하는 모바일 대시보드">
+  <title>레고 재테크 분석</title>
+  <link rel="stylesheet" href="styles.css?v=20261024">
+</head>
+<body>
+  <script>try{if(localStorage.getItem("lego-theme")==="dark")document.body.classList.add("dark")}catch(e){}</script>
+  <header class="top">
+    <div class="wrap">
+      <div class="logo" aria-hidden="true">LEGO</div>
+      <h1>레고 재테크 분석</h1>
+      <span class="chip basis">신품 기준</span>
+      <button id="theme-btn" class="chip" type="button" aria-label="다크 모드 전환">다크</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="kicker">단종 레고 수익률</div>
+      <div class="regime-line" id="hero-badge">데이터 확인 중…</div>
+      <h2 id="hero-title">시세 불러오는 중…</h2>
+      <p id="hero-desc">출시가 대비 현재 신품가 기준으로 단종 세트를 분석합니다.</p>
+    </div>
+  </section>
+
+  <div class="statusbar">
+    <div class="wrap" id="data-status">
+      <span>데이터 로딩 중…</span>
+    </div>
+  </div>
+
+  <div id="demo-card" class="alert-box hidden">
+    <b>샘플 데이터</b>
+    <span>UI 확인용 가상 데이터입니다. 실제 분석 결과가 아닙니다.</span>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="분석 탭">
+    <button class="on" data-tab="overview" role="tab" aria-selected="true">개요</button>
+    <button data-tab="ranking" role="tab" aria-selected="false">수익률</button>
+    <button data-tab="themes" role="tab" aria-selected="false">테마</button>
+    <button data-tab="data" role="tab" aria-selected="false">데이터</button>
+    <button data-tab="guide" role="tab" aria-selected="false">설명서</button>
+  </nav>
+
+  <main>
+    <section class="tabpane on" id="tab-overview">
+      <div id="kpi-grid" class="kpi-grid"></div>
+
+      <div class="card">
+        <div class="card-h">CAGR 상위 <span class="card-sub">단종 3년+ · 체결 10건+</span></div>
+        <div class="card-b" id="top-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">테마별 중위 CAGR</div>
+        <div class="card-b" id="theme-bars"></div>
+        <div class="note">랭킹 적합 5세트 이상 테마만 표시합니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">절대 차익 상위</div>
+        <div class="card-b" id="profit-list"></div>
+        <div class="note">현재 신품가에서 출시가(RRP)를 뺀 금액입니다.</div>
+      </div>
+    </section>
+
+    <section class="tabpane" id="tab-ranking">
+      <div class="card">
+        <div class="card-h">필터</div>
+        <div class="card-b">
+          <div class="row">
+            <input id="f-search" class="search-input" type="search" autocomplete="off" placeholder="세트 번호·이름·테마 검색">
+          </div>
+          <div class="row">
+            <select id="f-theme" aria-label="테마"></select>
+            <select id="f-band" aria-label="RRP 구간"></select>
+          </div>
+          <div class="row">
+            <label class="field-inline">단종
+              <input id="f-year-min" type="number" min="1990" max="2026" placeholder="최소">
+            </label>
+            <span class="tilde">~</span>
+            <label class="field-inline">
+              <input id="f-year-max" type="number" min="1990" max="2026" placeholder="최대">
+            </label>
+            <label class="field-inline">유동성
+              <input id="f-liquidity" type="number" min="0" step="1" value="0">
+            </label>
+          </div>
+          <div class="row">
+            <select id="f-sort" aria-label="정렬">
+              <option value="cagr">CAGR 높은순</option>
+              <option value="roi">ROI 높은순</option>
+              <option value="profit">절대 차익 높은순</option>
+              <option value="liquidity">유동성 높은순</option>
+              <option value="rrp">RRP 높은순</option>
+              <option value="year">단종 최신순</option>
+              <option value="name">이름순</option>
+            </select>
+            <label class="check"><input id="f-eligible" type="checkbox" checked> 랭킹 적합만</label>
+          </div>
+          <div class="row between">
+            <span class="count" id="rank-count"></span>
+            <button id="f-reset" class="link-btn" type="button">초기화</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">수익률 랭킹 <span class="card-sub">신품 기준</span></div>
+        <div class="card-b table-wrap rank-wrap">
+          <table id="rank-table" class="rank-table"></table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+    <section class="tabpane" id="tab-themes">
+      <div class="card">
+        <div class="card-h">테마별 성과</div>
+        <div class="card-b table-wrap">
+          <table id="theme-table" class="mini-table"></table>
+        </div>
+        <div class="note">랭킹 적합 세트 기준 중위값입니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">RRP 구간별 중위 CAGR</div>
+        <div class="card-b" id="band-bars"></div>
+        <div class="note">출시가가 높을수록 수익률도 높았는지 비교합니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">CAGR vs 유동성</div>
+        <div class="card-b" id="scatter"></div>
+        <div class="note">버블 크기는 6개월 체결 수량, 점을 누르면 상세가 열립니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">테마 × 단종연도</div>
+        <div class="card-b table-wrap" id="heatmap"></div>
+        <div class="note">셀 값은 해당 테마·연도 세트의 중위 CAGR입니다.</div>
+      </div>
+    </section>
+
+    <section class="tabpane" id="tab-data">
+      <div class="card">
+        <div class="card-h">데이터 커버리지</div>
+        <div class="card-b" id="coverage-grid"></div>
+        <div class="note" id="collection-note"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">제외 사유</div>
+        <div class="card-b table-wrap">
+          <table id="exclusion-table" class="mini-table"></table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">출처</div>
+        <div class="card-b source-list">
+          <p><a href="https://brickranker.com" target="_blank" rel="noreferrer">BrickRanker</a> — RRP, 출시일·단종일, 최근 6개월 신품 평균가, 월별 판매량, 데이터 신뢰도</p>
+          <p><a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank" rel="noreferrer">FRED CPIAUCSL</a> — 미국 소비자물가지수(실질 CAGR)</p>
+          <p><a href="https://www.bricklink.com" target="_blank" rel="noreferrer">BrickLink</a> — BrickRanker 이미지 및 원천 마켓플레이스 데이터</p>
+        </div>
+        <div class="note">BrickRanker는 여러 마켓플레이스 판매 기록을 집계한 3자 데이터입니다. 세트 상태·구성·박스 상태에 따라 실제 거래가는 달라질 수 있습니다.</div>
+      </div>
+    </section>
+
+    <section class="tabpane" id="tab-guide">
+      <div class="card guide">
+        <div class="card-h">1 · 수익률 계산</div>
+        <div class="card-b">
+          <p><b>ROI</b> = 현재 신품가 / 출시가(RRP) - 1</p>
+          <p><b>CAGR</b> = (현재 신품가 / RRP) ^ (1 / 보유연수) - 1</p>
+          <p><b>실질 CAGR</b>은 FRED CPI로 출시 시점 물가를 현재 물가로 환산합니다.</p>
+          <p><b>유동성</b>은 최근 6개월 신품 체결 수량입니다.</p>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-h">2 · 랭킹 기준</div>
+        <div class="card-b">
+          <p>1990~2024년 출시, 단종, US RRP $20 이상 세트를 대상으로 합니다.</p>
+          <p>랭킹은 <b>단종 후 3년 이상</b>, 최근 6개월 신품 체결 <b>10건 이상</b>인 세트만 포함합니다.</p>
+          <p>저유동성 세트는 평균가가 소수 거래에 좌우될 수 있어 별도 배지로 표시합니다.</p>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-h">3 · 데이터 출처</div>
+        <div class="card-b">
+          <p>가격·단종일·RRP는 BrickRanker 공개 데이터를 사용합니다. 수집은 캐시와 지연 요청으로 서버 부하를 줄입니다.</p>
+          <p>BrickRanker는 BrickLink 등 마켓플레이스의 판매 기록을 집계한 추정치입니다.</p>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-h">4 · 한계</div>
+        <div class="card-b">
+          <p><b>신품(New) 전용</b>입니다. BrickRanker가 중고 가격을 제공하지 않아 중고 수익률과 Sealed Premium은 분석하지 않습니다.</p>
+          <p>현재가는 최근 6개월 평균이라 개별 거래·상태·구성에 따라 크게 달라질 수 있습니다.</p>
+          <p>RRP는 실제 구매가가 아니며 수수료·배송·보관·세금·할인은 반영하지 않았습니다.</p>
+          <p>단종일이 공개되지 않은 세트는 추정값이며, 재출시·리메이크 세트는 가치가 희석될 수 있습니다.</p>
+        </div>
+      </div>
+
+      <div class="card alert-card">
+        <div class="card-h">면책</div>
+        <div class="card-b">
+          개인이 공개 데이터로 만든 참고용 도구입니다. <b>투자 권유가 아니며 미래 수익을 보장하지 않습니다.</b>
+          투자 판단과 결과는 본인 책임입니다.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="하단 탭">
+    <button class="on" data-tab="overview"><span>개요</span></button>
+    <button data-tab="ranking"><span>수익률</span></button>
+    <button data-tab="themes"><span>테마</span></button>
+    <button data-tab="data"><span>데이터</span></button>
+    <button data-tab="guide"><span>설명서</span></button>
+  </nav>
+
+  <div class="modal hidden" id="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-close="true"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grab"></div>
+      <button class="sheet-close" type="button" aria-label="닫기" data-close="true">×</button>
+      <div id="sheet-content"></div>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip hidden" aria-hidden="true"></div>
+
+  <script src="app.js?v=20261024" defer></script>
+</body>
+</html>

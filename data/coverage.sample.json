@@ -1,0 +1,15 @@
+{
+  "raw_brickset_sets": 72,
+  "universe_sets": 72,
+  "with_new_price": 72,
+  "with_used_price": 72,
+  "with_both_prices": 72,
+  "missing_new_price": 0,
+  "missing_used_price": 0,
+  "rank_eligible": 59,
+  "low_liquidity": 0,
+  "excluded_reasons": {},
+  "coverage_new_pct": 1.0,
+  "coverage_used_pct": 1.0,
+  "rank_eligible_pct": 0.8194
+}
