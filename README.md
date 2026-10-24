@@ -4,6 +4,9 @@
 560px 카드 UI, 라이트/다크 모드, 5개 탭(개요·수익률·테마·데이터·설명서)으로 구성됩니다.
 정적 파일만으로 동작하며, 로컬에서는 `python3 -m http.server`로 엽니다. 모든 숫자는 `scripts/`가 생성합니다.
 
+- 사이트: https://dawunkim93-eng.github.io/lego-investment-analyzer/
+- 저장소: https://github.com/dawunkim93-eng/lego-investment-analyzer
+
 ## 분석 기준
 
 - 대상: 1990~2024년 출시, 단종된 세트
@@ -69,6 +72,8 @@ python3 -m http.server 8000
 - 상위 세트 카드에는 최근 12개월 가격 스파크라인을 표시
 
 ## GitHub Pages 배포
+
+현재 GitHub Pages에 배포되어 있습니다: https://dawunkim93-eng.github.io/lego-investment-analyzer/
 
 이 프로젝트는 GitHub Pages에 바로 올릴 수 있는 정적 사이트입니다.
 
